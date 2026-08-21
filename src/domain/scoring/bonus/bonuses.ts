@@ -1,5 +1,6 @@
 export interface PlayerRankedScoringData {
-    rankedPoints: Record<string, number[]>
+  rankedPoints: Record<string, number[]>
+  noParticipationPenalty?: number
 }
 
 export interface MultipleRegionsScoringData {
@@ -12,17 +13,17 @@ export interface BonusConfig {
 
 // TODO: Refactor shared bonus fields. See GitHub issue #1
 interface BonusBase {
-    id: string
-    displayName: string
-    points: number
-    description: string
-    isExclusive: boolean
-    isPerItem: boolean
-    maxCount: number | null
+  id: string
+  displayName: string
+  description: string
 }
 
 export interface SimpleBonus extends BonusBase {
-  scoringType: "simple"
+  scoringType: 'simple'
+  points: number
+  isExclusive: boolean
+  isPerItem: boolean
+  maxCount: number | null
 }
 
 export interface PlayerRankedBonus extends BonusBase {
@@ -32,7 +33,7 @@ export interface PlayerRankedBonus extends BonusBase {
 }
 
 export interface MultipleRegionsBonus extends BonusBase {
-  scoringType: "multipleRegions"
+  scoringType: 'multipleRegions'
   scoringData: MultipleRegionsScoringData
 }
 
