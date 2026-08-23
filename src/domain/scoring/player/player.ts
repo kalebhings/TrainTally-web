@@ -1,4 +1,4 @@
-import type { DestinationTicketEntry } from "./destination-ticket"
+import type { DestinationTicketEntry } from "../ticket/destination-ticket"
 
 export interface Player {
     id: string

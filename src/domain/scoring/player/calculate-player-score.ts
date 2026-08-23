@@ -1,8 +1,8 @@
 import type { Player } from "./player"
-import type { RouteScoringEntry } from "./route-scoring"
+import type { RouteScoringEntry } from "../route/route-scoring"
 
-import { calculateDestinationTicketScore } from "./calculate-ticket-score"
-import { calculateRouteScore } from "./calculate-route-score"
+import { calculateDestinationTicketScore } from "../ticket/calculate-ticket-score"
+import { calculateRouteScore } from "../route/calculate-route-score"
 
 export interface PlayerScore {
     routeScore: number

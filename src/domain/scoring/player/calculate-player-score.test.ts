@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { calculatePlayerScore } from "./calculate-player-score";
 import type { Player } from "./player";
-import type { RouteScoringEntry } from "./route-scoring";
+import type { RouteScoringEntry } from "../route/route-scoring";
 
 
 describe('calculatePlayerScore', () => {

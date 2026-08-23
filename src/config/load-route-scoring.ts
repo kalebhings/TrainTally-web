@@ -1,4 +1,4 @@
-import type { RouteScoringConfig } from "../domain/scoring/route-scoring";
+import type { RouteScoringConfig } from "../domain/scoring/route/route-scoring";
 
 export async function loadRouteScoring(): Promise<RouteScoringConfig> {
     const response = await fetch('/data/shared/route-scoring.json')

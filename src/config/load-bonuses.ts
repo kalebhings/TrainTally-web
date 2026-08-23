@@ -1,4 +1,4 @@
-import type { BonusConfig } from '../domain/scoring/bonuses'
+import type { BonusConfig } from '../domain/scoring/bonus/bonuses'
 
 export async function loadBonuses(): Promise<BonusConfig> {
     const response = await fetch('/data/shared/bonuses.json')

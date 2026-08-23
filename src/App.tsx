@@ -5,8 +5,8 @@ import type {
   GameVersionIndex,
 } from './domain/game-version'
 
-import type { BonusConfig } from './domain/scoring/bonuses'
-import type { RouteScoringConfig } from './domain/scoring/route-scoring'
+import type { BonusConfig } from './domain/scoring/bonus/bonuses'
+import type { RouteScoringConfig } from './domain/scoring/route/route-scoring'
 
 import { loadGameVersionIndex } from './config/load-game-version-index'
 import { loadGameVersion } from './config/load-game-version'
