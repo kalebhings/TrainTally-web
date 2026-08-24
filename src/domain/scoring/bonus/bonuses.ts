@@ -27,6 +27,7 @@ export interface SimpleBonus extends BonusBase {
 
 export interface PlayerRankedBonus extends BonusBase {
   scoringType: "playerRanked"
+  participationPenalty: number | null
   scoringData: PlayerRankedScoringData
 }
 
