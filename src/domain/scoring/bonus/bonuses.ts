@@ -10,6 +10,7 @@ export interface BonusConfig {
     bonuses: Record<string, Bonus>
 }
 
+// TODO: Refactor shared bonus fields. See GitHub issue #1
 interface BonusBase {
     id: string
     displayName: string
