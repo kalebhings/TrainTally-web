@@ -32,22 +32,15 @@ describe('calculatePlayerScore', () => {
             ],
         }
 
-        const scoringTable: RouteScoringEntry[] = [
-            { length: 1, points: 1 },
-            { length: 2, points: 2 },
-            { length: 3, points: 4 },
-            { length: 4, points: 7 },
-            { length: 5, points: 10 },
-            { length: 6, points: 15 },
-        ]
-
         const result = calculatePlayerScore(
             player,
             scoringTable,
+            0
         )
         expect(result).toEqual({
             routeScore: 24,
             destinationTicketScore: 13,
+            bonusScore: 0,
             total: 37,
         })
     })
@@ -64,10 +57,12 @@ describe('calculatePlayerScore', () => {
         const result = calculatePlayerScore(
             player,
             scoringTable,
+            0
         )
         expect(result).toEqual({
             routeScore: 0,
             destinationTicketScore: 0,
+            bonusScore: 0,
             total: 0,
         })
     })
@@ -92,10 +87,12 @@ describe('calculatePlayerScore', () => {
         const result = calculatePlayerScore(
             player,
             scoringTable,
+            0
         )
         expect(result).toEqual({
             routeScore: 24,
             destinationTicketScore: -4,
+            bonusScore: 0,
             total: 20,
         })
     })
@@ -120,11 +117,75 @@ describe('calculatePlayerScore', () => {
         const result = calculatePlayerScore(
             player,
             scoringTable,
+            0
         )
         expect(result).toEqual({
             routeScore: 24,
             destinationTicketScore: -24,
+            bonusScore: 0,
             total: 0,
+        })
+    })
+
+    it('includes a positive bonus score in the total', () => {
+        const player: Player = {
+            id: 'player-3',
+            name: 'Alice',
+            color: 'green',
+            routeCounts: {
+                1: 1,
+                3: 2,
+                6: 1,
+            },
+            destinationTickets: [
+                { points: 7, completed: true },
+                { points: 10, completed: true },
+                { points: 4, completed: false },
+            ],
+        }
+
+        const result = calculatePlayerScore(
+            player,
+            scoringTable,
+            10,
+        )
+
+        expect(result).toEqual({
+            routeScore: 24,
+            destinationTicketScore: 13,
+            bonusScore: 10,
+            total: 47,
+        })
+    })
+
+    it('includes a negative bonus score in the total', () => {
+        const player: Player = {
+            id: 'player-4',
+            name: 'Charlie',
+            color: 'yellow',
+            routeCounts: {
+                1: 1,
+                3: 2,
+                6: 1,
+            },
+            destinationTickets: [
+                { points: 7, completed: true },
+                { points: 10, completed: true },
+                { points: 4, completed: false },
+            ],
+        }
+
+        const result = calculatePlayerScore(
+            player,
+            scoringTable,
+            -20,
+        )
+
+        expect(result).toEqual({
+            routeScore: 24,
+            destinationTicketScore: 13,
+            bonusScore: -20,
+            total: 17,
         })
     })
 })

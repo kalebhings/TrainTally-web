@@ -7,12 +7,14 @@ import { calculateRouteScore } from "../route/calculate-route-score"
 export interface PlayerScore {
     routeScore: number
     destinationTicketScore: number
+    bonusScore: number
     total: number
 }
 
 export function calculatePlayerScore(
     player: Player,
     scoringtable: RouteScoringEntry[],
+    bonusScore: number,
 ): PlayerScore {
     const routeScore = calculateRouteScore(
         player.routeCounts,
@@ -26,6 +28,7 @@ export function calculatePlayerScore(
     return {
         routeScore,
         destinationTicketScore,
-        total: routeScore + destinationTicketScore,
+        bonusScore,
+        total: routeScore + destinationTicketScore + bonusScore,
     }
 }
