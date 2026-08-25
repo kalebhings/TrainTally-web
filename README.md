@@ -38,6 +38,7 @@ Implemented so far:
 - player-ranked bonuses
 - bonus aggregation
 - player total score calculation
+- game score calculation
 
 The current UI is still primarily used for configuration and scoring development rather than as the final player-facing experience.
 
@@ -63,6 +64,7 @@ src/
 │   ├── game-version.ts
 │   └── scoring/
 │       ├── bonus/
+│       ├── game/
 │       ├── player/
 │       ├── route/
 │       └── ticket/
