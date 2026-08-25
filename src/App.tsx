@@ -222,14 +222,33 @@ function App() {
               <p>None</p>
             ) : (
               <ul>
-                {resolvedBonuses.map((bonus) => (
-                  <li key={bonus.id}>
-                    <strong>{bonus.displayName}</strong>
-                    {' — '}
-                    {bonus.points}{' '}
-                    {bonus.points === 1 ? 'point' : 'points'}
-                  </li>
-                ))}
+              {resolvedBonuses.map((bonus) => (
+                <li key={bonus.id}>
+                  <strong>{bonus.displayName}</strong>
+
+                  {bonus.scoringType === 'simple' && (
+                    <>
+                      {' — '}
+                      {bonus.points}{' '}
+                      {bonus.points === 1 ? 'point' : 'points'}
+                    </>
+                  )}
+
+                  {bonus.scoringType === 'multipleRegions' && (
+                    <>
+                      {' — '}
+                      Multiple-region scoring
+                    </>
+                  )}
+
+                  {bonus.scoringType === 'playerRanked' && (
+                    <>
+                      {' — '}
+                      Player-ranked scoring
+                    </>
+                  )}
+                </li>
+              ))}
               </ul>
             )}
           </section>

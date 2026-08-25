@@ -7,11 +7,7 @@ describe('calculateMultipleRegionsBonus', () => {
     const bonus: MultipleRegionsBonus = {
     id: 'connected_regions',
     displayName: 'Connected Regions',
-    points: 0,
     description: 'Number of consecutively connected regions',
-    isExclusive: false,
-    isPerItem: true,
-    maxCount: null,
     scoringType: 'multipleRegions',
     scoringData: {
         regionPoints: {
