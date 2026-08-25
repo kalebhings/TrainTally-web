@@ -7,11 +7,7 @@ describe('calculatePlayerRankedBonus', () => {
     const bonus: PlayerRankedBonus = {
     id: 'bullet_train',
     displayName: 'Bullet Train Participation',
-    points: 0,
     description: 'Bullet train participation ranking and player count',
-    isExclusive: false,
-    isPerItem: false,
-    maxCount: null,
     scoringType: 'playerRanked',
     participationPenalty: -20,
     scoringData: {

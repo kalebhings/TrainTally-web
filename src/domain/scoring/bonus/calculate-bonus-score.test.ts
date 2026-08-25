@@ -26,11 +26,7 @@ describe('calculateBonusScore', () => {
   const multipleRegionsBonus: MultipleRegionsBonus = {
     id: 'connected_regions',
     displayName: 'Connected Regions',
-    points: 0,
     description: 'Number of consecutively connected regions',
-    isExclusive: false,
-    isPerItem: true,
-    maxCount: null,
     scoringType: 'multipleRegions',
     scoringData: {
       regionPoints: {
@@ -47,11 +43,7 @@ describe('calculateBonusScore', () => {
   const rankedBonus: PlayerRankedBonus = {
     id: 'bullet_train',
     displayName: 'Bullet Train Participation',
-    points: 0,
     description: 'Bullet train participation ranking and player count',
-    isExclusive: false,
-    isPerItem: false,
-    maxCount: null,
     scoringType: 'playerRanked',
     participationPenalty: -20,
     scoringData: {
@@ -133,11 +125,7 @@ describe('calculateTotalBonusScore', () => {
     const multipleRegionsBonus: MultipleRegionsBonus = {
       id: 'connected_regions',
       displayName: 'Connected Regions',
-      points: 0,
       description: 'Number of consecutively connected regions',
-      isExclusive: false,
-      isPerItem: true,
-      maxCount: null,
       scoringType: 'multipleRegions',
       scoringData: {
         regionPoints: {
