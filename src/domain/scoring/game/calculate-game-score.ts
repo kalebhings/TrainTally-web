@@ -20,7 +20,8 @@ export function calculateGameScore(
         const score = calculatePlayerScore(
             playerInput.player,
             scoringTable,
-            bonusScore.total
+            bonusScore.total,
+            playerInput.meepleScore ?? 0,
         )
 
         return {
