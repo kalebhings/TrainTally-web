@@ -6,8 +6,9 @@ import type {
 import type { PlayerScore } from "../player/calculate-player-score"
 
 export interface PlayerGameScoreInput {
-    player: Player
-    bonusInputs: BonusScoreInput[]
+  player: Player
+  bonusInputs: BonusScoreInput[]
+  meepleScore?: number
 }
 
 export interface ScoredPlayer {
