@@ -1,6 +1,6 @@
 # TrainTally
 
-TrainTally is a scoring and game-tracking app for Ticket to Ride and related game variants.
+TrainTally is a scoring and game-tracking app for Ticket to Ride and its various game versions and expansions.
 
 This project is a web-based rethinking of the original iOS version:
 
@@ -26,7 +26,7 @@ It is being rebuilt with a focus on:
 
 ## Current Status
 
-The project is currently focused on rebuilding the core scoring engine.
+The core scoring engine is now largely implemented.
 
 Implemented so far:
 
@@ -36,11 +36,17 @@ Implemented so far:
 - simple bonuses
 - multiple-region bonuses
 - player-ranked bonuses
+- game-wide bonus resolution
 - bonus aggregation
+- meeple majority scoring
 - player total score calculation
-- game score calculation
+- game-level score calculation
+- final standings and tie ranking
+- complete game scoring orchestration
 
 The current UI is still primarily used for configuration and scoring development rather than as the final player-facing experience.
+
+The next major phase is building the player-facing score-entry workflow.
 
 ## Tech Stack
 
@@ -64,7 +70,9 @@ src/
 │   ├── game-version.ts
 │   └── scoring/
 │       ├── bonus/
+│       ├── bonus-resolution/
 │       ├── game/
+│       ├── meeple/
 │       ├── player/
 │       ├── route/
 │       └── ticket/
