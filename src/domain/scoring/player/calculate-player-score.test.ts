@@ -41,6 +41,7 @@ describe('calculatePlayerScore', () => {
             routeScore: 24,
             destinationTicketScore: 13,
             bonusScore: 0,
+            meepleScore: 0,
             total: 37,
         })
     })
@@ -63,6 +64,7 @@ describe('calculatePlayerScore', () => {
             routeScore: 0,
             destinationTicketScore: 0,
             bonusScore: 0,
+            meepleScore: 0,
             total: 0,
         })
     })
@@ -93,6 +95,7 @@ describe('calculatePlayerScore', () => {
             routeScore: 24,
             destinationTicketScore: -4,
             bonusScore: 0,
+            meepleScore: 0,
             total: 20,
         })
     })
@@ -123,6 +126,7 @@ describe('calculatePlayerScore', () => {
             routeScore: 24,
             destinationTicketScore: -24,
             bonusScore: 0,
+            meepleScore: 0,
             total: 0,
         })
     })
@@ -154,6 +158,7 @@ describe('calculatePlayerScore', () => {
             routeScore: 24,
             destinationTicketScore: 13,
             bonusScore: 10,
+            meepleScore: 0,
             total: 47,
         })
     })
@@ -185,7 +190,59 @@ describe('calculatePlayerScore', () => {
             routeScore: 24,
             destinationTicketScore: 13,
             bonusScore: -20,
+            meepleScore: 0,
             total: 17,
         })
+    })
+
+    it('includes meeple score in the total', () => {
+        const player: Player = {
+            id: 'player-5',
+            name: 'Dana',
+            color: 'purple',
+            routeCounts: {
+                1: 1,
+                3: 2,
+                6: 1,
+            },
+            destinationTickets: [
+                { points: 7, completed: true },
+                { points: 10, completed: true },
+                { points: 4, completed: false },
+            ],
+        }
+
+        const result = calculatePlayerScore(
+            player,
+            scoringTable,
+            10,
+            20,
+        )
+
+        expect(result).toEqual({
+            routeScore: 24,
+            destinationTicketScore: 13,
+            bonusScore: 10,
+            meepleScore: 20,
+            total: 67,
+        })
+    })
+
+    it('defaults meeple score to 0 when not provided', () => {
+        const player: Player = {
+            id: 'player-6',
+            name: 'Evan',
+            color: 'orange',
+            routeCounts: {},
+            destinationTickets: [],
+        }
+
+        const result = calculatePlayerScore(
+            player,
+            scoringTable,
+            0,
+        )
+
+        expect(result.meepleScore).toBe(0)
     })
 })

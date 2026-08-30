@@ -20,6 +20,7 @@ describe('calculateStandings', () => {
       routeScore: total,
       destinationTicketScore: 0,
       bonusScore: 0,
+      meepleScore: 0,
       total,
     },
     bonuses: [],

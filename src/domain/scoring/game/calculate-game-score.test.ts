@@ -106,6 +106,7 @@ describe('calculateGameScore', () => {
           routeScore: 24,
           destinationTicketScore: 13,
           bonusScore: 10,
+          meepleScore: 0,
           total: 47,
         },
         bonuses: [
@@ -121,6 +122,7 @@ describe('calculateGameScore', () => {
           routeScore: 19,
           destinationTicketScore: -4,
           bonusScore: -20,
+          meepleScore: 0,
           total: -5,
         },
         bonuses: [
@@ -172,6 +174,7 @@ describe('calculateGameScore', () => {
           routeScore: 4,
           destinationTicketScore: 5,
           bonusScore: 0,
+          meepleScore: 0,
           total: 9,
         },
         bonuses: [],
