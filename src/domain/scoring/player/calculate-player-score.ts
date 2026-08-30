@@ -8,6 +8,7 @@ export interface PlayerScore {
     routeScore: number
     destinationTicketScore: number
     bonusScore: number
+    meepleScore: number
     total: number
 }
 
@@ -15,6 +16,7 @@ export function calculatePlayerScore(
     player: Player,
     scoringtable: RouteScoringEntry[],
     bonusScore: number,
+    meepleScore: number = 0,
 ): PlayerScore {
     const routeScore = calculateRouteScore(
         player.routeCounts,
@@ -29,6 +31,7 @@ export function calculatePlayerScore(
         routeScore,
         destinationTicketScore,
         bonusScore,
-        total: routeScore + destinationTicketScore + bonusScore,
+        meepleScore,
+        total: routeScore + destinationTicketScore + bonusScore + meepleScore,
     }
 }
