@@ -8,7 +8,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   return (
-    <div className="app-shell">
+    <div className="mx-auto min-h-screen w-full max-w-4xl px-4 py-8">
       {children}
     </div>
   )
