@@ -1,6 +1,7 @@
 import type { GameVersion } from './game-version'
 
 export interface PlayerSetup {
+  id: string
   name: string
   color: string
 }

@@ -21,7 +21,7 @@ export function ScoringScreen({
 
       <ul>
         {gameSetup.players.map((player, index) => (
-          <li key={index}>
+          <li key={player.id}>
             {player.name || `Player ${index + 1}`}
             {' — '}
             {player.color}

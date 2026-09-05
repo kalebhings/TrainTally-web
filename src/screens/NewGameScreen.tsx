@@ -115,6 +115,7 @@ export function NewGameScreen({
 
       while (nextPlayers.length < playerCount) {
         nextPlayers.push({
+          id: crypto.randomUUID(),
           name: '',
           color: '',
         })
@@ -243,6 +244,11 @@ export function NewGameScreen({
     })
   }
 
+  const hasValidPlayerColors =
+    players.length === playerCount &&
+    players.every((player) => player.color !== '') &&
+    new Set(players.map((player) => player.color)).size === players.length
+
   return (
     <main className="new-game-screen">
       <div className="screen-header">
@@ -317,7 +323,7 @@ export function NewGameScreen({
         <div className="player-list">
           {players.map((player, index) => (
             <PlayerSetupRow
-              key={index}
+              key={player.id}
               index={index}
               name={player.name}
               color={player.color}
@@ -337,7 +343,10 @@ export function NewGameScreen({
 
       <button
         className="primary-button"
-        disabled={!gameVersion}
+        disabled={
+          !gameVersion || 
+          !hasValidPlayerColors
+        }
         onClick={() => {
           if (!gameVersion) {
             return
