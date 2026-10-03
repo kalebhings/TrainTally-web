@@ -29,12 +29,16 @@ export function resolveGlobetrotter(
     ...players.map((player) => player.completedTicketCount),
   )
 
-  const awardedPlayerIds = players
-    .filter(
-      (player) =>
-        player.completedTicketCount === highestCompletedTicketCount,
-    )
-    .map((player) => player.playerId)
+  // Nobody earns "most completed" with zero completed tickets.
+  const awardedPlayerIds =
+    highestCompletedTicketCount > 0
+      ? players
+          .filter(
+            (player) =>
+              player.completedTicketCount === highestCompletedTicketCount,
+          )
+          .map((player) => player.playerId)
+      : []
 
   return resolveManualBonus(
     bonus,

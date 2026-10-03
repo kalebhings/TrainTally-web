@@ -1,49 +1,34 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import type {
-  GameVersion,
-  GameVersionIndex,
-} from '../domain/game-version'
+import type { GameConfig } from '../domain/game-config'
+import type { GameVersionIndex } from '../domain/game-version'
+import type { GameSetup } from '../domain/game-setup'
 
-import { loadGameVersion } from '../config/load-game-version'
+import { loadGameConfig } from '../config/load-game-config'
 import { PlayerSetupRow } from '../components/PlayerSetupRow'
-
-import type { PlayerSetup } from '../domain/game-setup'
+import { Section } from '../components/Section'
+import {
+  createPlayerSetup,
+  finalizePlayers,
+  hasValidPlayerColors,
+  reassignColor,
+  reconcilePlayers,
+} from '../domain/game-setup'
 
 interface NewGameScreenProps {
   gameVersionIndex: GameVersionIndex
   onBack: () => void
-  onStartGame: (
-    gameVersion: GameVersion,
-    players: PlayerSetup[],
-  ) => void
+  onStartGame: (setup: GameSetup) => void
 }
 
-function getRandomItem<T>(items: T[]): T | undefined {
-  if (items.length === 0) {
-    return undefined
-  }
+// A load result tagged with the version it belongs to, so a stale
+// result can never be shown for a different selection.
+type LoadState =
+  | { versionId: string; config: GameConfig }
+  | { versionId: string; error: string }
 
-  const index = Math.floor(Math.random() * items.length)
-
-  return items[index]
-}
-
-function getUnusedColors(
-  colors: string[],
-  players: PlayerSetup[],
-  excludePlayerIndex?: number,
-): string[] {
-  const usedColors = new Set(
-    players
-      .filter((_, index) => index !== excludePlayerIndex)
-      .map((player) => player.color)
-      .filter(Boolean),
-  )
-
-  return colors.filter(
-    (color) => !usedColors.has(color),
-  )
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
 }
 
 export function NewGameScreen({
@@ -51,117 +36,76 @@ export function NewGameScreen({
   onBack,
   onStartGame,
 }: NewGameScreenProps) {
-  const [selectedGameVersionId, setSelectedGameVersionId] =
+  const [selectedVersionId, setSelectedVersionId] =
     useState(gameVersionIndex.versions[0]?.id ?? '')
 
-  const selectedGameVersion = useMemo(
-    () =>
-      gameVersionIndex.versions.find(
-        (version) =>
-          version.id === selectedGameVersionId,
-      ),
-    [
-      gameVersionIndex,
-      selectedGameVersionId,
-    ],
+  const selectedEntry = gameVersionIndex.versions.find(
+    (version) => version.id === selectedVersionId,
   )
 
-  const [gameVersion, setGameVersion] =
-    useState<GameVersion | null>(null)
+  const [loadState, setLoadState] =
+    useState<LoadState | null>(null)
 
-  const [loadError, setLoadError] =
-    useState<string | null>(null)
-
-  const [playerCount, setPlayerCount] = useState(
-    selectedGameVersion?.minPlayers ?? 2,
+  const [players, setPlayers] = useState(() =>
+    Array.from(
+      { length: selectedEntry?.minPlayers ?? 2 },
+      createPlayerSetup,
+    ),
   )
 
-  const [players, setPlayers] = useState<PlayerSetup[]>([])
+  const current =
+    loadState?.versionId === selectedVersionId ? loadState : null
+  const config = current && 'config' in current ? current.config : null
+  const loadError = current && 'error' in current ? current.error : null
+  const colors = config?.gameVersion.playerColors ?? []
 
   useEffect(() => {
-    if (!selectedGameVersion) {
-      setGameVersion(null)
+    if (!selectedEntry) {
       return
     }
 
-    setGameVersion(null)
-    setLoadError(null)
+    let ignore = false
 
-    loadGameVersion(selectedGameVersion.configFile)
-      .then(setGameVersion)
+    loadGameConfig(selectedEntry.configFile)
+      .then((loadedConfig) => {
+        if (ignore) {
+          return
+        }
+
+        const { minPlayers, maxPlayers, playerColors } =
+          loadedConfig.gameVersion
+
+        setLoadState({
+          versionId: selectedEntry.id,
+          config: loadedConfig,
+        })
+
+        // Keep the current player count when the new version allows it.
+        setPlayers((currentPlayers) =>
+          reconcilePlayers(
+            currentPlayers,
+            clamp(currentPlayers.length, minPlayers, maxPlayers),
+            playerColors,
+          ),
+        )
+      })
       .catch((error: unknown) => {
         console.error(error)
-        setLoadError('Failed to load game version.')
+
+        if (!ignore) {
+          setLoadState({
+            versionId: selectedEntry.id,
+            error: 'Failed to load game version.',
+          })
+        }
       })
-  }, [selectedGameVersion])
 
-  useEffect(() => {
-    if (!selectedGameVersion) {
-      return
+    return () => {
+      ignore = true
     }
+  }, [selectedEntry])
 
-    setPlayerCount(selectedGameVersion.minPlayers)
-  }, [selectedGameVersion])
-
-  useEffect(() => {
-    if (!gameVersion) {
-      return
-    }
-
-    setPlayers((currentPlayers) => {
-      const nextPlayers = currentPlayers
-        .slice(0, playerCount)
-        .map((player) => ({ ...player }))
-
-      while (nextPlayers.length < playerCount) {
-        nextPlayers.push({
-          id: crypto.randomUUID(),
-          name: '',
-          color: '',
-        })
-      }
-
-      const usedColors = new Set<string>()
-
-      for (const player of nextPlayers) {
-        const colorIsValid =
-          gameVersion.playerColors.includes(player.color)
-
-        const colorIsUnique =
-          !usedColors.has(player.color)
-
-        if (
-          player.color &&
-          colorIsValid &&
-          colorIsUnique
-        ) {
-          usedColors.add(player.color)
-          continue
-        }
-
-        const unusedColors =
-          gameVersion.playerColors.filter(
-            (color) => !usedColors.has(color),
-          )
-
-        const newColor =
-          getRandomItem(unusedColors) ?? ''
-
-        player.color = newColor
-
-        if (newColor) {
-          usedColors.add(newColor)
-        }
-      }
-
-      return nextPlayers
-    })
-  }, [
-    playerCount,
-    gameVersion,
-  ])
-
-  if (!selectedGameVersion) {
+  if (!selectedEntry) {
     return (
       <main>
         <p>No game versions available.</p>
@@ -173,163 +117,111 @@ export function NewGameScreen({
     )
   }
 
-  function updatePlayerName(
-    index: number,
-    name: string,
-  ) {
+  const minPlayers = selectedEntry.minPlayers
+  const maxPlayers = selectedEntry.maxPlayers
+
+  function changePlayerCount(delta: number) {
     setPlayers((currentPlayers) =>
-      currentPlayers.map((player, playerIndex) =>
-        playerIndex === index
-          ? { ...player, name }
-          : player,
+      reconcilePlayers(
+        currentPlayers,
+        clamp(currentPlayers.length + delta, minPlayers, maxPlayers),
+        colors,
       ),
     )
   }
 
-  function updatePlayerColor(
-    index: number,
-    newColor: string,
-  ) {
-    if (!gameVersion) {
-      return
-    }
-
-    setPlayers((currentPlayers) => {
-      const nextPlayers = currentPlayers.map(
-        (player) => ({ ...player }),
-      )
-
-      const currentColor =
-        nextPlayers[index].color
-
-      const conflictingPlayerIndex =
-        nextPlayers.findIndex(
-          (player, playerIndex) =>
-            playerIndex !== index &&
-            player.color === newColor,
-        )
-
-      // No other player has this color.
-      if (conflictingPlayerIndex === -1) {
-        nextPlayers[index].color = newColor
-        return nextPlayers
-      }
-
-      const unusedColors = getUnusedColors(
-        gameVersion.playerColors,
-        nextPlayers,
-      )
-
-      const replacementColor =
-        getRandomItem(unusedColors)
-
-      if (replacementColor) {
-        // Give the displaced player a random unused color.
-        nextPlayers[conflictingPlayerIndex].color =
-          replacementColor
-
-        nextPlayers[index].color = newColor
-
-        return nextPlayers
-      }
-
-      // Every available color is already assigned,
-      // so swap the two players' colors.
-      nextPlayers[conflictingPlayerIndex].color =
-        currentColor
-
-      nextPlayers[index].color = newColor
-
-      return nextPlayers
-    })
+  function updatePlayerName(index: number, name: string) {
+    setPlayers((currentPlayers) =>
+      currentPlayers.map((player, playerIndex) =>
+        playerIndex === index ? { ...player, name } : player,
+      ),
+    )
   }
 
-  const hasValidPlayerColors =
-    players.length === playerCount &&
-    players.every((player) => player.color !== '') &&
-    new Set(players.map((player) => player.color)).size === players.length
+  function updatePlayerColor(index: number, color: string) {
+    setPlayers((currentPlayers) =>
+      reassignColor(currentPlayers, index, color, colors),
+    )
+  }
+
+  const canStart =
+    config !== null &&
+    players.length >= minPlayers &&
+    players.length <= maxPlayers &&
+    hasValidPlayerColors(players, colors)
 
   return (
-    <main className="new-game-screen">
-      <div className="screen-header">
-        <button onClick={onBack}>
+    <main className="mx-auto grid w-full max-w-xl gap-4 pb-24">
+      <header className="flex items-center gap-3">
+        <button
+          type="button"
+          className="min-h-11 rounded-full border border-gray-300 bg-white px-4 font-medium"
+          onClick={onBack}
+        >
           Back
         </button>
 
-        <h1>New Game</h1>
-      </div>
+        <h1 className="text-2xl font-bold">New Game</h1>
+      </header>
 
-      <section className="setup-section">
-        <h2>Game Version</h2>
-
+      <Section title="Game Version">
         <select
-          value={selectedGameVersionId}
+          className="min-h-12 w-full rounded-lg border border-gray-300 bg-white px-3 text-base"
+          value={selectedVersionId}
           onChange={(event) =>
-            setSelectedGameVersionId(
-              event.target.value,
-            )
+            setSelectedVersionId(event.target.value)
           }
         >
-          {gameVersionIndex.versions.map(
-            (version) => (
-              <option
-                key={version.id}
-                value={version.id}
-              >
-                {version.displayName}
-              </option>
-            ),
-          )}
+          {gameVersionIndex.versions.map((version) => (
+            <option key={version.id} value={version.id}>
+              {version.displayName}
+            </option>
+          ))}
         </select>
 
         {loadError && (
-          <p>{loadError}</p>
+          <p className="mt-2 text-sm text-red-600">{loadError}</p>
         )}
-      </section>
+      </Section>
 
-      <section className="setup-section">
-        <h2>Players</h2>
+      <Section
+        title="Players"
+        aside={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex size-10 items-center justify-center rounded-full bg-gray-200 text-xl font-semibold disabled:opacity-30"
+              aria-label="Remove player"
+              disabled={!config || players.length <= minPlayers}
+              onClick={() => changePlayerCount(-1)}
+            >
+              −
+            </button>
 
-        <div className="player-count-control">
-          <button
-            onClick={() =>
-              setPlayerCount((count) =>
-                Math.max(
-                  selectedGameVersion.minPlayers,
-                  count - 1,
-                ),
-              )
-            }
-          >
-            -
-          </button>
+            <span className="w-6 text-center text-lg font-semibold tabular-nums">
+              {players.length}
+            </span>
 
-          <span>{playerCount}</span>
-
-          <button
-            onClick={() =>
-              setPlayerCount((count) =>
-                Math.min(
-                  selectedGameVersion.maxPlayers,
-                  count + 1,
-                ),
-              )
-            }
-          >
-            +
-          </button>
-        </div>
-
-        <div className="player-list">
+            <button
+              type="button"
+              className="flex size-10 items-center justify-center rounded-full bg-gray-200 text-xl font-semibold disabled:opacity-30"
+              aria-label="Add player"
+              disabled={!config || players.length >= maxPlayers}
+              onClick={() => changePlayerCount(1)}
+            >
+              +
+            </button>
+          </div>
+        }
+      >
+        <div className="grid gap-3">
           {players.map((player, index) => (
             <PlayerSetupRow
               key={player.id}
               index={index}
               name={player.name}
               color={player.color}
-              availableColors={
-                gameVersion?.playerColors ?? []
-              }
+              availableColors={colors}
               onNameChange={(name) =>
                 updatePlayerName(index, name)
               }
@@ -339,27 +231,31 @@ export function NewGameScreen({
             />
           ))}
         </div>
-      </section>
+      </Section>
 
-      <button
-        className="primary-button"
-        disabled={
-          !gameVersion || 
-          !hasValidPlayerColors
-        }
-        onClick={() => {
-          if (!gameVersion) {
-            return
-          }
+      <div className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
+        <button
+          type="button"
+          className="mx-auto block min-h-12 w-full max-w-xl rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:bg-gray-300"
+          disabled={!canStart}
+          onClick={() => {
+            if (!config) {
+              return
+            }
 
-          onStartGame(
-            gameVersion,
-            players,
-          )
-        }}
-      >
-        Start Game
-      </button>
+            onStartGame({
+              config,
+              players: finalizePlayers(players),
+            })
+          }}
+        >
+          {config
+            ? 'Start Game'
+            : loadError
+              ? 'Version unavailable'
+              : 'Loading…'}
+        </button>
+      </div>
     </main>
   )
 }

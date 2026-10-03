@@ -5,7 +5,7 @@
       "displayName": "Longest Route",
       "points": 10,
       "description": "Longest continuous path of trains",
-      "isExclusive": true,
+      "entryMode": "manualAward",
       "isPerItem": false,
       "maxCount": null,
       "scoringType": "simple"
@@ -15,7 +15,7 @@
       "displayName": "Globetrotter",
       "points": 15,
       "description": "Most completed destination tickets",
-      "isExclusive": true,
+      "entryMode": "mostCompletedTickets",
       "isPerItem": false,
       "maxCount": null,
       "scoringType": "simple"
@@ -25,7 +25,7 @@
       "displayName": "Unused Stations",
       "points": 4,
       "description": "4 points per unused train station",
-      "isExclusive": true,
+      "entryMode": "perPlayerCount",
       "isPerItem": true,
       "maxCount": 3,
       "scoringType": "simple"
@@ -33,30 +33,22 @@
     "bullet_train": {
       "id": "bullet_train",
       "displayName": "Bullet Train Participation",
-      "points": 0,
       "description": "Bullet train participation ranking and player count",
-      "isExclusive": false,
-      "isPerItem": false,
-      "maxCount": null,
       "scoringType": "playerRanked",
+      "participationPenalty": -20,
       "scoringData": {
         "rankedPoints": {
           "2": [10, -10],
           "3": [15, 5, -10],
           "4": [20, 10, 0, -10],
           "5": [25, 15, 5, -5, -10]
-        },
-        "noParticipationPenalty": -20
+        }
       }
     },
     "connected_regions": {
       "id": "connected_regions",
       "displayName": "Connected Regions",
-      "points": 0,
       "description": "Number of Consecutively Connected Regions",
-      "isExclusive": false,
-      "isPerItem": true,
-      "maxCount": null,
       "scoringType": "multipleRegions",
       "scoringData": {
         "regionPoints": {

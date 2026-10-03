@@ -10,7 +10,7 @@ describe('resolveGlobetrotter', () => {
     description: 'Most completed destination tickets',
     scoringType: 'simple',
     points: 15,
-    isExclusive: true,
+    entryMode: 'mostCompletedTickets',
     isPerItem: false,
     maxCount: null,
   }
@@ -113,6 +113,21 @@ describe('resolveGlobetrotter', () => {
         bonus,
         count: 1,
     })
+  })
+
+  it('awards no one when no player has completed a ticket', () => {
+    const result = resolveGlobetrotter(
+      bonus,
+      [
+        { playerId: 'player-1', completedTicketCount: 0 },
+        { playerId: 'player-2', completedTicketCount: 0 },
+      ],
+    )
+
+    expect(result.map((player) => player.bonusInputs[0])).toEqual([
+      { bonus, count: 0 },
+      { bonus, count: 0 },
+    ])
   })
 
   it('returns an empty array when there are no players', () => {

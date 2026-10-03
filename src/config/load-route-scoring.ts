@@ -1,15 +1,9 @@
 import type { RouteScoringConfig } from "../domain/scoring/route/route-scoring";
 
+import { fetchJson } from './fetch-json'
+
 export async function loadRouteScoring(): Promise<RouteScoringConfig> {
-    const response = await fetch('/data/shared/route-scoring.json')
-
-    if (!response.ok) {
-        throw new Error(
-            `Failed to load route scoring config: ${response.status}`,
-        )
-    }
-
-    const data: unknown = await response.json()
+    const data = await fetchJson('/data/shared/route-scoring.json')
 
     return data as RouteScoringConfig
 }
