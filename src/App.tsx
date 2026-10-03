@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react'
 import type { GameVersionIndex } from './domain/game-version'
 import type { GameSetup } from './domain/game-setup'
 
+import { loadBonuses } from './config/load-bonuses'
 import { loadGameVersionIndex } from './config/load-game-version-index'
+import { loadRouteScoring } from './config/load-route-scoring'
 import { AppShell } from './components/AppShell'
 import { HomeScreen } from './screens/HomeScreen'
 import { NewGameScreen } from './screens/NewGameScreen'
@@ -29,6 +31,11 @@ function App() {
     useState<string | null>(null)
 
   useEffect(() => {
+    // Warm the shared config cache so the first game version
+    // loads without waiting on these.
+    loadBonuses().catch(() => {})
+    loadRouteScoring().catch(() => {})
+
     loadGameVersionIndex()
       .then(setGameVersionIndex)
       .catch((error: unknown) => {
@@ -39,7 +46,11 @@ function App() {
 
   return (
     <AppShell>
-      {error && <p>{error}</p>}
+      {error && (
+        <p className="mb-4 rounded-xl bg-red-50 p-3 text-red-700">
+          {error}
+        </p>
+      )}
 
       {screen === 'home' && (
         <HomeScreen
@@ -52,19 +63,15 @@ function App() {
       {screen === 'new-game' && (
         <>
           {!gameVersionIndex && !error && (
-            <p>Loading game versions...</p>
+            <p className="text-gray-500">Loading game versions...</p>
           )}
 
           {gameVersionIndex && (
             <NewGameScreen
               gameVersionIndex={gameVersionIndex}
               onBack={() => setScreen('home')}
-              onStartGame={(gameVersion, players) => {
-                setGameSetup({
-                  gameVersion,
-                  players,
-                })
-
+              onStartGame={(setup) => {
+                setGameSetup(setup)
                 setScreen('scoring')
               }}
             />
@@ -75,7 +82,8 @@ function App() {
       {screen === 'scoring' && gameSetup && (
         <ScoringScreen
           gameSetup={gameSetup}
-          onBack={() => setScreen('new-game')}
+          onExit={() => setScreen('home')}
+          onNewGame={() => setScreen('new-game')}
         />
       )}
 

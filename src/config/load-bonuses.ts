@@ -1,15 +1,9 @@
 import type { BonusConfig } from '../domain/scoring/bonus/bonuses'
 
+import { fetchJson } from './fetch-json'
+
 export async function loadBonuses(): Promise<BonusConfig> {
-    const response = await fetch('/data/shared/bonuses.json')
-
-    if (!response.ok) {
-        throw new Error(
-            `Failed to load bonuses config: ${response.status}`,
-        )
-    }
-
-    const data: unknown = await response.json()
+    const data = await fetchJson('/data/shared/bonuses.json')
 
     return data as BonusConfig
 }

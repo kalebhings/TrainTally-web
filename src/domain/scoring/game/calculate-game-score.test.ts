@@ -21,7 +21,7 @@ describe('calculateGameScore', () => {
     displayName: 'Longest Route',
     points: 10,
     description: 'Longest continuous path of trains',
-    isExclusive: true,
+    entryMode: 'manualAward',
     isPerItem: false,
     maxCount: null,
     scoringType: 'simple',

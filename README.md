@@ -43,10 +43,9 @@ Implemented so far:
 - game-level score calculation
 - final standings and tie ranking
 - complete game scoring orchestration
+- player-facing score-entry workflow: game setup, per-player scoring tabs with live totals, version-specific bonus inputs, and final results
 
-The current UI is still primarily used for configuration and scoring development rather than as the final player-facing experience.
-
-The next major phase is building the player-facing score-entry workflow.
+Next up is local game persistence and history.
 
 ## Tech Stack
 

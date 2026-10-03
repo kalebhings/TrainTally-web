@@ -4,11 +4,11 @@
   "minPlayers": 2,
   "maxPlayers": 5,
   "trainCarsPerPlayer": 45,
-  "stationsPerPlayer": null,
+  "stationsPerPlayer": 3,
   "playerColors": ["red", "blue", "green", "yellow", "black"],
   "routeScoring": "different_1-8_with_no_5_7",
   "features": {
-    "hasStations": false,
+    "hasStations": true,
     "hasMeeples": false,
     "hasFerries": false,
     "hasShips": false

@@ -35,6 +35,8 @@ export interface GameVersion {
   minPlayers: number
   maxPlayers: number
   trainCarsPerPlayer: number
+  // Highest destination ticket value. Defaults when omitted.
+  maxTicketPoints?: number
   stationsPerPlayer: number | null
   playerColors: string[]
   routeScoring: string
