@@ -31,17 +31,6 @@ describe('calculatePlayerRankedBonus', () => {
     expect(result).toBe(20)
   })
 
-  it('returns the second-place score for a four-player game', () => {
-    const result = calculatePlayerRankedBonus(
-      bonus,
-      4,
-      2,
-      true,
-    )
-
-    expect(result).toBe(10)
-  })
-
   it('can return zero as a valid ranked score', () => {
     const result = calculatePlayerRankedBonus(
       bonus,

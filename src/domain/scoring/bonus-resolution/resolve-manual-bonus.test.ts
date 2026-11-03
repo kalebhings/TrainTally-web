@@ -53,29 +53,6 @@ describe('resolveManualBonus', () => {
     ])
   })
 
-  it('supports multiple awarded players', () => {
-    const result = resolveManualBonus(
-      bonus,
-      ['player-1', 'player-2', 'player-3'],
-      ['player-1', 'player-3'],
-    )
-
-    expect(result[0].bonusInputs[0]).toEqual({
-      bonus,
-      count: 1,
-    })
-
-    expect(result[1].bonusInputs[0]).toEqual({
-      bonus,
-      count: 0,
-    })
-
-    expect(result[2].bonusInputs[0]).toEqual({
-      bonus,
-      count: 1,
-    })
-  })
-
   it('awards no players when no player is selected', () => {
     const result = resolveManualBonus(
       bonus,

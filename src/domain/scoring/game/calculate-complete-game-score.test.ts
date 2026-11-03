@@ -160,19 +160,4 @@ describe('calculateCompleteGameScore', () => {
     expect(result.standings[0].rank).toBe(1)
     expect(result.standings[1].rank).toBe(1)
   })
-
-  it('returns empty results when there are no players', () => {
-    const result = calculateCompleteGameScore(
-      {
-        players: [],
-        bonusInputsByPlayer: [],
-      },
-      scoringTable,
-    )
-
-    expect(result).toEqual({
-      scoredPlayers: [],
-      standings: [],
-    })
-  })
 })

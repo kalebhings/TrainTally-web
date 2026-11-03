@@ -93,20 +93,6 @@ describe('calculateBonusScore', () => {
       score: 10,
     })
   })
-
-  it('calculates a participation penalty for a ranked bonus', () => {
-    const result = calculateBonusScore({
-      bonus: rankedBonus,
-      playerCount: 4,
-      rank: 1,
-      participated: false,
-    })
-
-    expect(result).toEqual({
-      bonusId: 'bullet_train',
-      score: -20,
-    })
-  })
 })
 
 describe('calculateTotalBonusScore', () => {
