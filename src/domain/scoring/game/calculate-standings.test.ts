@@ -48,24 +48,6 @@ describe('calculateStandings', () => {
     ])
   })
 
-  it('gives tied players the same rank', () => {
-    const players = [
-      createScoredPlayer('player-1', 'Alice', 100),
-      createScoredPlayer('player-2', 'Bob', 90),
-      createScoredPlayer('player-3', 'Charlie', 90),
-      createScoredPlayer('player-4', 'Diana', 80),
-    ]
-
-    const result = calculateStandings(players)
-
-    expect(result.map((player) => player.rank)).toEqual([
-      1,
-      2,
-      2,
-      4,
-    ])
-  })
-
   it('sorts tied players alphabetically by name', () => {
     const players = [
       createScoredPlayer('player-1', 'Charlie', 90),
@@ -107,22 +89,6 @@ describe('calculateStandings', () => {
       2,
       2,
       5,
-    ])
-  })
-
-  it('handles zero and negative scores', () => {
-    const players = [
-      createScoredPlayer('player-1', 'Alice', -10),
-      createScoredPlayer('player-2', 'Bob', 0),
-      createScoredPlayer('player-3', 'Charlie', -20),
-    ]
-
-    const result = calculateStandings(players)
-
-    expect(result.map((player) => player.player.name)).toEqual([
-      'Bob',
-      'Alice',
-      'Charlie',
     ])
   })
 

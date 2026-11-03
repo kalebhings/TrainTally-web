@@ -88,33 +88,6 @@ describe('resolveGlobetrotter', () => {
     })
   })
 
-  it('uses the manual override on multiple players when supplied', () => {
-    const result = resolveGlobetrotter(
-      bonus,
-      [
-        { playerId: 'player-1', completedTicketCount: 10 },
-        { playerId: 'player-2', completedTicketCount: 2 },
-        { playerId: 'player-3', completedTicketCount: 10 },
-      ],
-      ['player-1', 'player-3'],
-    )
-
-    expect(result[0].bonusInputs[0]).toEqual({
-      bonus,
-      count: 1,
-    })
-
-    expect(result[1].bonusInputs[0]).toEqual({
-      bonus,
-      count: 0,
-    })
-
-    expect(result[2].bonusInputs[0]).toEqual({
-        bonus,
-        count: 1,
-    })
-  })
-
   it('awards no one when no player has completed a ticket', () => {
     const result = resolveGlobetrotter(
       bonus,

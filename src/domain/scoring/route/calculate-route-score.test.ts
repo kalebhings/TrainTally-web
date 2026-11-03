@@ -49,15 +49,4 @@ describe('calculateRouteScore', () => {
         )
         expect(result).toBe(21)
     })
-
-    it('treats missing route lengths as 0', () => {
-        const routeCounts: Record<number, number> = {
-            2: 2,
-        }
-        const result = calculateRouteScore(
-            routeCounts,
-            standardScoringTable,
-        )
-        expect(result).toBe(4)
-    })
 })

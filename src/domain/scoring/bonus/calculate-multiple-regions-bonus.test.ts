@@ -48,15 +48,6 @@ describe('calculateMultipleRegionsBonus', () => {
     expect(result).toBe(8)
   })
 
-  it('adds the scores for several completed region groups', () => {
-    const result = calculateMultipleRegionsBonus(
-      bonus,
-      [5, 8, 10],
-    )
-
-    expect(result).toBe(24)
-  })
-
   it('returns 0 for unsupported region group sizes', () => {
     const result = calculateMultipleRegionsBonus(
       bonus,

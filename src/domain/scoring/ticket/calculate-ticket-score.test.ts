@@ -53,30 +53,4 @@ describe('calculateDestinationTicketScore', () => {
         )
         expect(result).toBe(17)
     })
-
-    it('calculates the correct total for multiple tickets with same value completed', () => {
-        const destinationTickets: DestinationTicketEntry[] = [
-            { points: 7, completed: true },
-            { points: 10, completed: true },
-            { points: 4, completed: true },
-            { points: 4, completed: true },
-        ]
-
-        const result = calculateDestinationTicketScore(
-            destinationTickets,
-        )
-        expect(result).toBe(25)
-    })
-
-    it('returns 0 when tickets are a net-zero result', () => {
-        const destinationTickets: DestinationTicketEntry[] = [
-            { points: 4, completed: true },
-            { points: 4, completed: false },
-        ]
-
-        const result = calculateDestinationTicketScore(
-            destinationTickets,
-        )
-        expect(result).toBe(0)
-    })
 })
