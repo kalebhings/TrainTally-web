@@ -5,10 +5,11 @@ import type { ScoreEntry, ScoreEntryAction } from './score-entry'
 
 import { loadRealGameConfig } from '../../config/real-game-data'
 import { createScoreEntry, scoreEntryReducer } from './score-entry'
-import { scoreLimits, trainCarsUsed } from './limits'
+import { playerTrainCarsUsed, scoreLimits, trainCarsUsed } from './limits'
 import {
   autoMostCompletedTicketsWinners,
   entryIssues,
+  routesReceived,
   scoreGame,
 } from './score-game'
 
@@ -212,6 +213,56 @@ describe('entryIssues', () => {
       { playerId: 'p2', message: 'Bob uses 48 of 45 train cars.' },
     ])
     expect(entryIssues(players, entryWith())).toEqual([])
+  })
+})
+
+describe('routes scored for other players', () => {
+  const routeForOther = (
+    playerId: string,
+    scorerId: string,
+    length: number,
+    delta = 1,
+  ): ScoreEntryAction => ({
+    type: 'changeRouteForOtherCount',
+    playerId,
+    scorerId,
+    length,
+    delta,
+  })
+
+  it('gives the points to the scorer, not the builder', () => {
+    const entry = entryWith(
+      { type: 'changeRouteCount', playerId: 'p1', length: 3, delta: 1 },
+      { type: 'changeRouteCount', playerId: 'p2', length: 4, delta: 1 },
+      routeForOther('p1', 'p2', 4),
+      routeForOther('p3', 'p2', 2),
+    )
+    const scores = totals('old_west', entry)
+
+    expect(scores.p1.routeScore).toBe(4)
+    expect(scores.p2.routeScore).toBe(7 + 7 + 2)
+    expect(scores.p3.routeScore).toBe(0)
+    expect(routesReceived(entry, 'p2')).toEqual([
+      { builderId: 'p1', routeCounts: { 4: 1 } },
+      { builderId: 'p3', routeCounts: { 2: 1 } },
+    ])
+    expect(routesReceived(entry, 'p1')).toEqual([])
+  })
+
+  it("uses the builder's train cars", () => {
+    const entry = entryWith(
+      { type: 'changeRouteCount', playerId: 'p1', length: 6, delta: 6 },
+      routeForOther('p1', 'p2', 5),
+    )
+
+    expect(playerTrainCarsUsed(entry.players.p1)).toBe(41)
+    expect(playerTrainCarsUsed(entry.players.p2)).toBe(0)
+    expect(
+      entryIssues(players, {
+        ...entry,
+        limits: scoreLimits(loadRealGameConfig('old_west').gameVersion),
+      }),
+    ).toEqual([{ playerId: 'p1', message: 'Ann uses 41 of 40 train cars.' }])
   })
 })
 

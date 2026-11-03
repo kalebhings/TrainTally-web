@@ -1,25 +1,35 @@
 import type { ScoreLimits } from '../../domain/score-entry/limits'
+import type { PlayerEntry } from '../../domain/score-entry/score-entry'
 import type { RouteScoringEntry } from '../../domain/scoring/route/route-scoring'
 
 import { maxRouteCount } from '../../domain/score-entry/limits'
 
 import { formatPoints } from '../display'
 import { Section } from '../Section'
-import { Stepper } from '../Stepper'
+import { RouteStepperGrid } from './RouteStepperGrid'
+
+// Points another player's trains scored for this player.
+export interface ReceivedRouteDisplay {
+  builderId: string
+  builderName: string
+  points: number
+}
 
 interface RouteGridProps {
   scoringTable: RouteScoringEntry[]
-  routeCounts: Record<number, number>
+  playerEntry: PlayerEntry
   limits: ScoreLimits
   routeScore: number
+  received?: ReceivedRouteDisplay[]
   onChange: (length: number, delta: number) => void
 }
 
 export function RouteGrid({
   scoringTable,
-  routeCounts,
+  playerEntry,
   limits,
   routeScore,
+  received = [],
   onChange,
 }: RouteGridProps) {
   return (
@@ -31,27 +41,25 @@ export function RouteGrid({
         </span>
       }
     >
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {scoringTable.map((entry) => (
-          <div
-            key={entry.length}
-            className="flex flex-col items-center gap-1 rounded-xl bg-gray-50 p-3"
-          >
-            <span className="text-lg font-semibold">
-              {entry.length} {entry.length === 1 ? 'car' : 'cars'}
-            </span>
-            <span className="text-sm text-gray-500">
-              {formatPoints(entry.points)} pts
-            </span>
-            <Stepper
-              label={`${entry.length}-car routes`}
-              value={routeCounts[entry.length] ?? 0}
-              max={maxRouteCount(routeCounts, entry.length, limits)}
-              onChange={(delta) => onChange(entry.length, delta)}
-            />
-          </div>
-        ))}
-      </div>
+      <RouteStepperGrid
+        scoringTable={scoringTable}
+        counts={playerEntry.routeCounts}
+        maxFor={(length) => maxRouteCount(playerEntry, length, limits)}
+        onChange={onChange}
+      />
+
+      {received.length > 0 && (
+        // These points are already in routeScore; this explains why.
+        <ul className="mt-3 grid gap-1 text-sm text-gray-600">
+          {received.map((route) => (
+            <li key={route.builderId}>
+              Includes {formatPoints(route.points)} pts from{' '}
+              <span className="font-semibold">{route.builderName}</span>'s
+              trains
+            </li>
+          ))}
+        </ul>
+      )}
     </Section>
   )
 }

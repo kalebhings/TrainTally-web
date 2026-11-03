@@ -5,6 +5,7 @@ import type { GameSetup } from '../domain/game-setup'
 import { BonusSection } from '../components/scoring/BonusSection'
 import { PlayerTabs } from '../components/scoring/PlayerTabs'
 import { RouteGrid } from '../components/scoring/RouteGrid'
+import { RoutesForOthers } from '../components/scoring/RoutesForOthers'
 import { TicketList } from '../components/scoring/TicketList'
 import { TrainCarsMeter } from '../components/scoring/TrainCarsMeter'
 import {
@@ -12,8 +13,13 @@ import {
   createScoreEntry,
   scoreEntryReducer,
 } from '../domain/score-entry/score-entry'
-import { trainCarsUsed } from '../domain/score-entry/limits'
-import { entryIssues, scoreGame } from '../domain/score-entry/score-game'
+import { playerTrainCarsUsed } from '../domain/score-entry/limits'
+import { calculateRouteScore } from '../domain/scoring/route/calculate-route-score'
+import {
+  entryIssues,
+  routesReceived,
+  scoreGame,
+} from '../domain/score-entry/score-game'
 import {
   playerAccentHex,
   playerColorHex,
@@ -96,6 +102,16 @@ export function ScoringScreen({
   )
   const selectedPlayer = players[selectedIndex]
   const issues = entryIssues(players, entry)
+  const routesCanScoreForOthers =
+    config.gameVersion.features.routesCanScoreForOthers
+  const received = routesReceived(entry, selectedPlayerId).map(
+    ({ builderId, routeCounts }) => ({
+      builderId,
+      builderName:
+        players.find((player) => player.id === builderId)?.name ?? '',
+      points: calculateRouteScore(routeCounts, config.routeScoringTable),
+    }),
+  )
 
   return (
     <main className="mx-auto grid w-full max-w-xl gap-4">
@@ -195,15 +211,16 @@ export function ScoringScreen({
           </div>
 
           <TrainCarsMeter
-            used={trainCarsUsed(playerEntry.routeCounts)}
+            used={playerTrainCarsUsed(playerEntry)}
             total={config.gameVersion.trainCarsPerPlayer}
           />
 
           <RouteGrid
             scoringTable={config.routeScoringTable}
-            routeCounts={playerEntry.routeCounts}
+            playerEntry={playerEntry}
             limits={entry.limits}
             routeScore={scored.score.routeScore}
+            received={received}
             onChange={(length, delta) =>
               dispatch({
                 type: 'changeRouteCount',
@@ -213,6 +230,25 @@ export function ScoringScreen({
               })
             }
           />
+
+          {routesCanScoreForOthers && (
+            <RoutesForOthers
+              playerId={selectedPlayerId}
+              players={players}
+              playerEntry={playerEntry}
+              scoringTable={config.routeScoringTable}
+              limits={entry.limits}
+              onChange={(scorerId, length, delta) =>
+                dispatch({
+                  type: 'changeRouteForOtherCount',
+                  playerId: selectedPlayerId,
+                  scorerId,
+                  length,
+                  delta,
+                })
+              }
+            />
+          )}
 
           <TicketList
             tickets={playerEntry.tickets}

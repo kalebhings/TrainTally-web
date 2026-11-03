@@ -4,6 +4,7 @@ import type { ScoreLimits } from './limits'
 import {
   isValidTicketPoints,
   maxRouteCount,
+  maxRouteCountFor,
   scoreLimits,
 } from './limits'
 
@@ -27,6 +28,10 @@ export interface PlayerEntry {
   rankedValues: Record<string, RankedValueEntry>
   regionGroups: Record<string, number[]>
   meepleCounts: Record<string, number>
+  // scorerId → length → count. Routes built with this player's train
+  // cars whose points go to another player (e.g. Old West routes into
+  // their station city).
+  routesForOthers: Record<string, Record<number, number>>
 }
 
 export interface ScoreEntry {
@@ -41,6 +46,7 @@ export interface ScoreEntry {
 
 export type ScoreEntryAction =
   | { type: 'changeRouteCount'; playerId: string; length: number; delta: number }
+  | { type: 'changeRouteForOtherCount'; playerId: string; scorerId: string; length: number; delta: number }
   | { type: 'addTicket'; playerId: string; ticket: TicketEntry }
   | { type: 'toggleTicket'; playerId: string; ticketId: string }
   | { type: 'removeTicket'; playerId: string; ticketId: string }
@@ -67,6 +73,7 @@ export function createPlayerEntry(): PlayerEntry {
     rankedValues: {},
     regionGroups: {},
     meepleCounts: {},
+    routesForOthers: {},
   }
 }
 
@@ -127,7 +134,7 @@ function updatePlayerAction(
       // Only increases are limited, so a player can always back out.
       if (
         next > current &&
-        next > maxRouteCount(player.routeCounts, action.length, limits)
+        next > maxRouteCount(player, action.length, limits)
       ) {
         return player
       }
@@ -276,6 +283,36 @@ export function scoreEntryReducer(
           [action.bonusId]: action.playerIds,
         },
       }
+
+    case 'changeRouteForOtherCount': {
+      const { playerId, scorerId, length, delta } = action
+
+      if (scorerId === playerId || !(scorerId in state.players)) {
+        return state
+      }
+
+      return updatePlayer(state, playerId, (player) => {
+        const counts = player.routesForOthers[scorerId] ?? {}
+        const current = counts[length] ?? 0
+        const next = toCount(current + delta)
+
+        // Only increases are limited, so a player can always back out.
+        if (
+          next > current &&
+          next > maxRouteCountFor(current, length, player, state.limits)
+        ) {
+          return player
+        }
+
+        return {
+          ...player,
+          routesForOthers: {
+            ...player.routesForOthers,
+            [scorerId]: { ...counts, [length]: next },
+          },
+        }
+      })
+    }
 
     case 'clearAwardOverride': {
       const awardOverrides = { ...state.awardOverrides }

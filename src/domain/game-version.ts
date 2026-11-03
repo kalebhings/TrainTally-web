@@ -21,6 +21,9 @@ export interface GameVersionFeatures {
   hasMeeples: boolean
   hasFerries: boolean
   hasShips: boolean
+  // A route can use one player's train cars but score for another
+  // (e.g. Old West routes into another player's station city).
+  routesCanScoreForOthers: boolean
 }
 
 export interface MeepleConfig {
