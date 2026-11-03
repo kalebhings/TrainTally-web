@@ -2,6 +2,7 @@ import type { Dispatch, ReactNode } from 'react'
 
 import type { GameConfig } from '../../domain/game-config'
 import type { PlayerSetup } from '../../domain/game-setup'
+import type { MeepleConfig } from '../../domain/game-version'
 import type {
   MultipleRegionsBonus,
   PlayerRankedBonus,
@@ -23,6 +24,7 @@ import {
   bonusCountLimit,
   completedTicketCount,
 } from '../../domain/score-entry/score-game'
+import { calculateMeepleScores } from '../../domain/scoring/meeple/calculate-meeple-scores'
 import { capitalize, formatPoints, playerColorHex } from '../display'
 import { Section } from '../Section'
 import { Stepper } from '../Stepper'
@@ -113,8 +115,8 @@ export function BonusSection({
 
         {meepleConfig && (
           <BonusRow
-            title="Meeples"
-            description={`Most of a color: ${meepleConfig.majorityPoints} pts, second: ${meepleConfig.secondPlacePoints} pts`}
+            title="Meeples collected"
+            description={`Enter how many meeples of each color this player has. We compare all players and award ${meepleConfig.majorityPoints} pts for the most of each color and ${meepleConfig.secondPlacePoints} pts for second.`}
             points={scored.score.meepleScore}
           >
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -131,7 +133,7 @@ export function BonusSection({
                     {capitalize(color)}
                   </span>
                   <Stepper
-                    label={`${color} meeples`}
+                    label={`${color} meeples collected`}
                     value={playerEntry.meepleCounts[color] ?? 0}
                     onChange={(delta) =>
                       dispatch({
@@ -142,6 +144,16 @@ export function BonusSection({
                       })
                     }
                   />
+                  <MeepleStandingBadge
+                    points={meepleColorPoints(
+                      meepleConfig,
+                      color,
+                      players,
+                      entry,
+                      playerId,
+                    )}
+                    config={meepleConfig}
+                  />
                 </div>
               ))}
             </div>
@@ -149,6 +161,57 @@ export function BonusSection({
         )}
       </div>
     </Section>
+  )
+}
+
+// Points this player earns for one color, compared against every player.
+function meepleColorPoints(
+  config: MeepleConfig,
+  color: string,
+  players: PlayerSetup[],
+  entry: ScoreEntry,
+  playerId: string,
+): number {
+  const scores = calculateMeepleScores(
+    players.map((player) => ({
+      playerId: player.id,
+      counts: entry.players[player.id]?.meepleCounts ?? {},
+    })),
+    { ...config, colors: [color] },
+  )
+
+  return scores.find((score) => score.playerId === playerId)?.score ?? 0
+}
+
+interface MeepleStandingBadgeProps {
+  points: number
+  config: MeepleConfig
+}
+
+function MeepleStandingBadge({
+  points,
+  config,
+}: MeepleStandingBadgeProps) {
+  const badgeClass = 'rounded-full px-2 py-0.5 text-xs font-medium'
+
+  if (points > 0 && points === config.majorityPoints) {
+    return (
+      <span className={`${badgeClass} bg-amber-100 text-amber-800`}>
+        Most · +{points}
+      </span>
+    )
+  }
+
+  if (points > 0 && points === config.secondPlacePoints) {
+    return (
+      <span className={`${badgeClass} bg-slate-200 text-slate-700`}>
+        2nd · +{points}
+      </span>
+    )
+  }
+
+  return (
+    <span className={`${badgeClass} bg-gray-100 text-gray-400`}>—</span>
   )
 }
 
