@@ -62,6 +62,20 @@ describe('game data', () => {
     },
   )
 
+  it('requires the routesCanScoreForOthers flag to be a boolean', () => {
+    const italy = readData('versions/italy.json') as Record<string, unknown>
+    const { routesCanScoreForOthers: _, ...features } =
+      italy.features as Record<string, unknown>
+
+    expect(isGameVersion({ ...italy, features })).toBe(false)
+    expect(
+      isGameVersion({
+        ...italy,
+        features: { ...features, routesCanScoreForOthers: 'yes' },
+      }),
+    ).toBe(false)
+  })
+
   it('rejects a version whose feature flags disagree with its config', () => {
     const italy = readData('versions/italy.json') as Record<string, unknown>
 

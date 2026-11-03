@@ -4,6 +4,7 @@ import type { GameSetup } from '../game-setup'
 import type { ScoreEntry } from './score-entry'
 
 import { loadRealGameConfig } from '../../config/real-game-data'
+import { maxRouteCount } from './limits'
 import { createScoreEntry, scoreEntryReducer } from './score-entry'
 
 const players = [
@@ -130,6 +131,75 @@ describe('scoreEntryReducer', () => {
     state = apply(state, { ...addSix, delta: -1 })
 
     expect(state.players.p1.routeCounts[6]).toBe(6)
+  })
+
+  it('steps route counts built for another player', () => {
+    const step = (delta: number) => ({
+      type: 'changeRouteForOtherCount' as const,
+      playerId: 'p1',
+      scorerId: 'p2',
+      length: 4,
+      delta,
+    })
+
+    let state = apply(createScoreEntry(setup), step(1), step(1))
+
+    expect(state.players.p1.routesForOthers).toEqual({ p2: { 4: 2 } })
+    expect(state.players.p2.routesForOthers).toEqual({})
+
+    state = apply(state, step(-1), step(-1), step(-1))
+
+    expect(state.players.p1.routesForOthers.p2[4]).toBe(0)
+  })
+
+  it('refuses routes for yourself, unknown players, or past the car limit', () => {
+    const step = (scorerId: string, length: number, delta = 1) => ({
+      type: 'changeRouteForOtherCount' as const,
+      playerId: 'p1',
+      scorerId,
+      length,
+      delta,
+    })
+
+    // 7 six-car routes = 42 of 45 cars, leaving 3.
+    const full = apply(
+      createScoreEntry(setup),
+      ...Array(7).fill({
+        type: 'changeRouteCount',
+        playerId: 'p1',
+        length: 6,
+        delta: 1,
+      }),
+    )
+
+    let state = apply(
+      full,
+      step('p1', 2),
+      step('nobody', 2),
+      step('p2', 4),
+      step('p2', 3),
+      step('p2', 3),
+    )
+
+    expect(state.players.p1.routesForOthers).toEqual({ p2: { 3: 1 } })
+
+    // Removing still works at the limit.
+    state = apply(state, step('p2', 3, -1))
+
+    expect(state.players.p1.routesForOthers.p2[3]).toBe(0)
+  })
+
+  it('counts routes built for others against the route limit', () => {
+    const state = apply(createScoreEntry(setup), {
+      type: 'changeRouteForOtherCount',
+      playerId: 'p1',
+      scorerId: 'p2',
+      length: 6,
+      delta: 1,
+    })
+
+    // 39 of 45 cars left: six more 6-car routes, not seven.
+    expect(maxRouteCount(state.players.p1, 6, state.limits)).toBe(6)
   })
 
   it('marks a ranked bonus as participated once a value is entered', () => {

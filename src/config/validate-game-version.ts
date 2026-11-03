@@ -27,6 +27,9 @@ export function isGameVersion(value: unknown): value is GameVersion {
         features.hasStations ===
         (typeof candidate.stationsPerPlayer === 'number')
 
+    const routesCanScoreForOthersIsValid =
+        typeof features.routesCanScoreForOthers === 'boolean'
+
     const maxTicketPointsIsValid =
         candidate.maxTicketPoints === undefined ||
         (Number.isInteger(candidate.maxTicketPoints) &&
@@ -42,6 +45,7 @@ export function isGameVersion(value: unknown): value is GameVersion {
         isStringArray(candidate.playerColors) &&
         isStringArray(candidate.bonuses) &&
         maxTicketPointsIsValid &&
+        routesCanScoreForOthersIsValid &&
         meeplesAreConsistent &&
         stationsAreConsistent
     )

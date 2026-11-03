@@ -11,7 +11,8 @@
     "hasStations": false,
     "hasMeeples": false,
     "hasFerries": false,
-    "hasShips": false
+    "hasShips": false,
+    "routesCanScoreForOthers": true
   },
   "bonuses": ["globetrotter"],
   "meepleConfig": null

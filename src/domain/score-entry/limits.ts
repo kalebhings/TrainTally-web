@@ -1,4 +1,5 @@
 import type { GameVersion } from '../game-version'
+import type { PlayerEntry } from './score-entry'
 
 // Used until a version sets its own `maxTicketPoints`.
 export const DEFAULT_MAX_TICKET_POINTS = 40
@@ -39,16 +40,48 @@ export function trainCarsUsed(
   return total
 }
 
-// Highest count allowed for routes of `length` given the cars already used.
-export function maxRouteCount(
-  routeCounts: Record<number, number>,
+// Cars used for routes the player built for other players.
+export function trainCarsUsedForOthers(player: PlayerEntry): number {
+  let total = 0
+
+  for (const counts of Object.values(player.routesForOthers)) {
+    total += trainCarsUsed(counts)
+  }
+
+  return total
+}
+
+// Every car the player has on the board, whoever scored the route.
+export function playerTrainCarsUsed(player: PlayerEntry): number {
+  return trainCarsUsed(player.routeCounts) + trainCarsUsedForOthers(player)
+}
+
+// Highest count allowed for a stepper currently at `current` routes of
+// `length`, given every car the player has already used.
+export function maxRouteCountFor(
+  current: number,
   length: number,
+  player: PlayerEntry,
   limits: ScoreLimits,
 ): number {
   const remainingCars = Math.max(
     0,
-    limits.trainCarsPerPlayer - trainCarsUsed(routeCounts),
+    limits.trainCarsPerPlayer - playerTrainCarsUsed(player),
   )
 
-  return (routeCounts[length] ?? 0) + Math.floor(remainingCars / length)
+  return current + Math.floor(remainingCars / length)
+}
+
+// Highest count allowed for the player's own routes of `length`.
+export function maxRouteCount(
+  player: PlayerEntry,
+  length: number,
+  limits: ScoreLimits,
+): number {
+  return maxRouteCountFor(
+    player.routeCounts[length] ?? 0,
+    length,
+    player,
+    limits,
+  )
 }

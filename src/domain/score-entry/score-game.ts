@@ -11,7 +11,7 @@ import { resolveGlobetrotter } from '../scoring/bonus-resolution/resolve-globetr
 import { resolveManualBonus } from '../scoring/bonus-resolution/resolve-manual-bonus'
 import { resolvePlayerRankedBonus } from '../scoring/bonus-resolution/resolve-player-ranked-bonus'
 import { calculateCompleteGameScore } from '../scoring/game/calculate-complete-game-score'
-import { trainCarsUsed } from './limits'
+import { playerTrainCarsUsed } from './limits'
 import { createPlayerEntry, EMPTY_RANKED_VALUE } from './score-entry'
 
 export interface EntryIssue {
@@ -27,8 +27,8 @@ export function entryIssues(
   const issues: EntryIssue[] = []
 
   for (const player of players) {
-    const used = trainCarsUsed(
-      (entry.players[player.id] ?? createPlayerEntry()).routeCounts,
+    const used = playerTrainCarsUsed(
+      entry.players[player.id] ?? createPlayerEntry(),
     )
 
     if (used > entry.limits.trainCarsPerPlayer) {
@@ -40,6 +40,46 @@ export function entryIssues(
   }
 
   return issues
+}
+
+export interface ReceivedRoutes {
+  builderId: string
+  routeCounts: Record<number, number>
+}
+
+// Routes other players built whose points go to `playerId`, one entry
+// per builder that gave them any.
+export function routesReceived(
+  entry: ScoreEntry,
+  playerId: string,
+): ReceivedRoutes[] {
+  return Object.entries(entry.players)
+    .map(([builderId, builder]) => ({
+      builderId,
+      routeCounts: builder.routesForOthers[playerId] ?? {},
+    }))
+    .filter(({ routeCounts }) =>
+      Object.values(routeCounts).some((count) => count > 0),
+    )
+}
+
+// A player's own routes plus routes built for them by others.
+function scoringRouteCounts(
+  entry: ScoreEntry,
+  playerId: string,
+  playerEntry: PlayerEntry,
+): Record<number, number> {
+  const counts = { ...playerEntry.routeCounts }
+
+  for (const { routeCounts } of routesReceived(entry, playerId)) {
+    for (const [length, count] of Object.entries(routeCounts)) {
+      const key = Number(length)
+
+      counts[key] = (counts[key] ?? 0) + count
+    }
+  }
+
+  return counts
 }
 
 export function completedTicketCount(entry: PlayerEntry): number {
@@ -174,7 +214,7 @@ export function scoreGame(
       id: player.id,
       name: player.name,
       color: player.color,
-      routeCounts: playerEntry.routeCounts,
+      routeCounts: scoringRouteCounts(entry, player.id, playerEntry),
       destinationTickets: playerEntry.tickets,
     }
   })
